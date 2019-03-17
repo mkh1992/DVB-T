@@ -6,5 +6,9 @@ z= zeros(8*203,1);
 syncwin = [headerC;z;header;z;header;z;header;z;header;z;header;z;header;z;header;z];
 pocketSync  =conv(2*toOuterInterleaver-1, syncwin(end:-1:1));
 [~,maxind]=max(pocketSync);
+if maxind > length(syncwin)
 curser = maxind-length(syncwin)+1;
+else
+    curser =1;
+end
 
