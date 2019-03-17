@@ -52,10 +52,10 @@ else
         end
     end
     index = SPC{mod(symbolNumber,4)+1};
-    Hmem(index) = (ofdmSymbols(index))./PRBSequence(index);
+    Hmem(index) =(ofdmSymbols(index))./PRBSequence(index);
     if  Hmem(10) ~=0
-        H = interp1(1:3:max(SPC{1,1}),Hmem(1:3:max(SPC{1,1})),1:1:max(SPC{1,1}),'spline');
-        %H = smooth(H,200).';
+        H =interp1(1:3:max(SPC{1,1}),Hmem(1:3:max(SPC{1,1})),1:1:max(SPC{1,1}));
+        %H = smooth(H,1000).';
     end
 end
 coefficients = H;
