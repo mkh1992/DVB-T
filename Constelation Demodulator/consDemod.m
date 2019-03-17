@@ -1,7 +1,7 @@
 % Constellation to Bits
 %persistent 
 function demodOut=consDemod(ofdmData,mode,symbolNumber,modulation,showConstellation)
-persistent continualPilot scatterPilot TPSdataIndex dataIndex consPoints;
+persistent continualPilot scatterPilot TPSdataIndex dataIndex consPoints constdiag
 if isempty(TPSdataIndex)
 TPSdataIndex = [34,50,209,346,413,569,595,688,790,901,...
     1073,1219,1262,1286,1469,1594,1687,1738,...
@@ -85,6 +85,7 @@ if isempty(consPoints)
         consPoints = X+1i*Y;
         consPoints=consPoints(:)./sqrt(2);
     end
+    constdiag = comm.ConstellationDiagram('ReferenceConstellation',consPoints);
 end       
 ofdmData = ofdmData(dataIndex{mod(symbolNumber,4)+1});
 if strcmp(modulation,'64QAM')
@@ -104,11 +105,6 @@ if strcmp(modulation,'QPSK')
     demodOut = qamdemod(ofdmData,4,dvbtSymorder,'UnitAveragePower', true);
 end
 if strcmp(showConstellation,'on')
-      scatter(real(ofdmData),imag(ofdmData));
-      hold on;
-      scatter(real(consPoints),imag(consPoints),'*r');
-      grid on
-      axis([-2,2,-2,2]);
-      hold off
-      pause(0.01)
+    constdiag(ofdmData)
+    pause(0.001)
 end
