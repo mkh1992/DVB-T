@@ -15,19 +15,19 @@ addpath('Channel Coding Layer')
 %% read Row data
 sec = 4; % amount of signal to be proccesed (in Sec)
 sampRate = 10e6;
-fidr = fopen('602_res','r');
-%fid = fopen('d:\testBB.bin','r');
+fidr = fopen('650_shiraz','r');
+%fidr = fopen('d:\testBB1.bin','r');
 a = fread(fidr,4e6,'float'); % 2*sampRate*sec
 a = a(1:2:end)+1i*a(2:2:end);
 %% change sample time to "elemntary period" for 8MHz channels = 7/64 us
-ofdm_samples=[zeros(100,1);a];clear a;
+ofdm_samples=[zeros(1,1);a];clear a;
 %% Determine OFDM Mode (2k or 8k) and guard interval (1/4 1/8 1/16 1/32)
 fprintf('MODE Detection started\n')
 inisig = ofdm_samples(1:(10*8192));
 % load signal
 % inisig = signal;
-guard = [1/4,1/8,1/16,1/32];
-Ni = [2048,8192];
+guard =[1/4,1/8,1/16,1/32];
+Ni =[2048,8192];
 C  = cell(9,3);
 C(1,1:3) = {'name','testOut','varToAve'};
 Co=2;
@@ -93,7 +93,7 @@ for guardAssumed = guard
 end
 %% data Extracting ...
 TPSdata = zeros(68,1);
-s = dir('602_res');         
+s = dir('650_shiraz');         
 filesize = s.bytes/(32*2)*8;
 fidw = fopen('test.ts','w');
 conutFirstPlace = 4e6;
@@ -113,8 +113,8 @@ while(endingFlag == 0)
             TPSbits  = BPSKdemod(TPSdata(1:68));
             [decoded,NumCorrected] = bchdec(gf([TPSbits;zeros(59,1)].'),127,113);
             decoded = decoded(1:54);
-            informationTable=TPStable(decoded.x);
-            fprintf('%s \n',informationTable{3,2});
+            infoTab=TPStable(decoded.x);
+            fprintf('%s \n',infoTab{3,2});
         end
         if  OSN > 4
         yp=symbolDeinterleaver(demodOut,ni,mod(OSN,68));
@@ -132,7 +132,11 @@ while(endingFlag == 0)
                 if count == conutFirstPlace
                     [a,count] = fread(fidr,count,'float');
                     a = a(1:2:end)+1i*a(2:2:end);
-                    ofdm_samples=[ofdm_samples((lastSample-68*ni):end);a];
+                    if lastSample>68*ni
+                        ofdm_samples=[ofdm_samples((lastSample-68*ni):end);a];
+                    elseif lastSample<68*ni
+                        ofdm_samples=[ofdm_samples((lastSample):end);a];
+                    end
                 elseif count ~= conutFirstPlace
                       endingFlag = 1;
                 end
@@ -161,7 +165,7 @@ while(endingFlag == 0)
                 [~,TPSindex] = max(TPSynch(2:68));
                 [decoded,NumCorrected] = bchdec(gf([TPSbits(TPSindex:TPSindex+67);zeros(59,1)].'),127,113);
                 decoded = decoded(1:54);
-                informationTable=TPStable(decoded.x);
+                infoTab=TPStable(decoded.x);
                 OSN = 0;            
             end
         elseif OSN <= 4

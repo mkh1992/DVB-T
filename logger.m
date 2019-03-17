@@ -3,8 +3,8 @@ radio = comm.SDRuReceiver(...
       'Platform', 'B200', ...
       'SerialNum', '3103D11', ...
       'MasterClockRate', 20e6);
-radio.CenterFrequency  = 650e6;
-radio.Gain = 50;
+radio.CenterFrequency  = 746e6;
+radio.Gain = 40;
 radio.DecimationFactor = 2;
 radio.SamplesPerFrame = 1e4;
 radio.OutputDataType = 'double';
@@ -17,7 +17,7 @@ end
 data = resample(data,64,70);
 toFile = [real(data),imag(data)];
 toFile=reshape(toFile.',length(toFile)*2,1);
-fid = fopen('650_res','w');
+fid = fopen('650_shiraz','w');
 fwrite(fid,toFile,'float');
 fclose(fid);
 release(radio)
