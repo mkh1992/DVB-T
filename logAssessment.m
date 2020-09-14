@@ -15,15 +15,19 @@ addpath('Channel Coding Layer')
 %% read Row data
 sec = 4; % amount of signal to be proccesed (in Sec)
 sampRate = 10e6;
-fidr = fopen('650_shiraz','r');
+filename = 'QPSK_2K_1_8';
+fidr = fopen(filename);
 %fidr = fopen('d:\testBB1.bin','r');
 a = fread(fidr,4e6,'float'); % 2*sampRate*sec
 a = a(1:2:end)+1i*a(2:2:end);
+
 %% change sample time to "elemntary period" for 8MHz channels = 7/64 us
-ofdm_samples=[zeros(1,1);a];clear a;
+ofdm_samples=[zeros(10,1);a];
+ofdm_samples = resample(ofdm_samples,64,70);
+clear a;
 %% Determine OFDM Mode (2k or 8k) and guard interval (1/4 1/8 1/16 1/32)
 fprintf('MODE Detection started\n')
-inisig = ofdm_samples(1:(10*8192));
+inisig = ofdm_samples(1:(3*8192));
 % load signal
 % inisig = signal;
 guard =[1/4,1/8,1/16,1/32];
@@ -51,7 +55,7 @@ end
 clear mod_test i j Co
 fprintf('-------------------\n')
 %% Pre FFT Time offset and frequency offset Estimation
-for guardAssumed = guard
+for guardAssumed = 1/8
     fprintf('###Synchronization Parameters for Guard Assumed as %0.3f ###  \n',guardAssumed)
     ni = Ni(modDetect+1);
     %GL = guardAssumed*ni;
@@ -64,16 +68,17 @@ for guardAssumed = guard
     %% provide data from i'th OFDMSymbol for dciesion Devise (i = windowIndex)
     TPSdata=zeros(136,1);
     for i =1:136
-        [ofdmData] = ofdmDemodulator(i,ofdm_samples,ni,guardAssumed,-1,timeOffset,fFrequencyOffset,...
+        [ofdmData,H] = ofdmDemodulator(i,ofdm_samples,ni,guardAssumed,-1,timeOffset,fFrequencyOffset,...
             cFrequencyOffset);
         TPSdata(i) = TPSdetector(ofdmData,ni);
     end
     %% TPS for confirmation or reconfiguration
     BPSKdemod = comm.DBPSKDemodulator;
+    % TPSdata = TPS68DBPSK;
     TPSbits  = BPSKdemod(TPSdata);
     pattern  = [0 0 1 1 0 1 0 1 1 1 1 0 1 1 1 0];
     TPSynch  =abs(conv(2*TPSbits-1, 2*pattern(end:-1:1)-1, 'valid'));
-    [~,TPSindex] = max(TPSynch(2:68));
+    [~,TPSindex] = max(TPSynch(2:69));
     [decoded,NumCorrected] = bchdec(gf([TPSbits(TPSindex:TPSindex+67);zeros(59,1)].'),127,113);
     decoded = decoded(1:54);
     informationTable=TPStable(decoded.x);
@@ -93,7 +98,7 @@ for guardAssumed = guard
 end
 %% data Extracting ...
 TPSdata = zeros(68,1);
-s = dir('650_shiraz');         
+s = dir(filename);         
 filesize = s.bytes/(32*2)*8;
 fidw = fopen('test.ts','w');
 conutFirstPlace = 4e6;
@@ -107,7 +112,7 @@ while(endingFlag == 0)
         [ofdmData,H] = ofdmDemodulator(TPSindex+OSN,ofdm_samples,ni,guardAssumed,mod(OSN,68),...
             timeOffset,fFrequencyOffset,cFrequencyOffset);
         TPSdata(mod(OSN,68)+1,1) = TPSdetector(ofdmData,ni);
-        demodOut=consDemod(ofdmData,ni,mod(OSN,68),Inform{4,2},'off');
+        demodOut=consDemod(ofdmData,ni,mod(OSN,68),Inform{4,2},'on');
         if mod(OSN,68) == 0 && OSN ~= 0
             BPSKdemod = comm.DBPSKDemodulator;
             TPSbits  = BPSKdemod(TPSdata(1:68));
@@ -183,3 +188,5 @@ while(endingFlag == 0)
 end
 fclose(fidr);
 fclose(fidw);
+fclose('all');
+fclose('all')
