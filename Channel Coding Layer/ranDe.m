@@ -13,7 +13,7 @@ En=[zeros(1,8),ones(1,187*8)];
 Enable = repmat(En,1,8);
 andres = and(Enable,rndPRBS);
 end
-randStorage = [randStorage;toDerand];
+randStorage =[randStorage;toDerand];
 Len=floor(size(randStorage)/8);
 tofile = [];
 for i=1:Len(1)
