@@ -1,6 +1,6 @@
 %Synchronizer
 function [timeOffset,fFrequencyOffset,cFrequencyOffset]=Synchronizer(signal,correlatorOut,mode,guard)
-%signal=inisig,correlatorOut=C{7,2},mode=8192,guard=1/8
+%signal=inisig,correlatorOut=C{3,2},mode=2048,guard=1/8
 %% PRB Secuence
 switch mode
     case 2048
@@ -53,7 +53,7 @@ for i=1:NS
     ind = ((i-1)*LS+CtimeOffset):((i-1)*LS+CtimeOffset+guard*mode-1);
     fO(i) =signal(ind)'*signal(ind+mode);
 end
-fFrequencyOffset = 1/(2*pi) *phase(sum(fO));
+fFrequencyOffset = 1/(2*pi) *angle(sum(fO));
 %% Coarse Frequency
 inter = CtimeOffset:(CtimeOffset+LS-1);
 correctedSignal = signal(inter).*...
