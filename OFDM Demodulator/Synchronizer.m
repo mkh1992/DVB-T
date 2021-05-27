@@ -61,30 +61,32 @@ correctedSignal = signal(inter).*...
 % signal with coarce time offset and fine frequency offset
 correctedSignal = correctedSignal((guard*mode+1):end); % remove Guard
 receivedSymbols = fft(correctedSignal);
+receivedSymbols = circshift(receivedSymbols, (numOut - 1) /2);
 PRBSequence=4/3*2*(1/2-PRBSequence);
 if mode == 2048
     pilotSymbols = zeros(2048,1);
     CPC = CPC(1:45);
     pilotSymbols(CPC+1)=PRBSequence(CPC+1);
-    CFO = zeros(2048,1);
-    for i = 1:2048
-        CFO(i)=circshift(receivedSymbols,i)'*pilotSymbols;
+    CFO = zeros(21,1);
+    for i = -10:10
+        CFO(i + 21)=circshift(receivedSymbols,i)'*pilotSymbols;
     end
 elseif mode == 8192
     pilotSymbols = zeros(8192,1);
     pilotSymbols(CPC+1)=PRBSequence(CPC+1);
-    CFO = zeros(8192,1);
-    for i = 1:8192
-        CFO(i)=circshift(receivedSymbols,i)'*pilotSymbols;
+    CFO = zeros(21,1);
+    for i = -20:20
+        CFO(i + 21)=circshift(receivedSymbols,i)'*pilotSymbols;
     end
 end
 [~,cFrequencyOffset] = max(abs(CFO));
-cFrequencyOffset=-(cFrequencyOffset);
+cFrequencyOffset=-(cFrequencyOffset) + 21;
 %% Fine time
 correctedSignal = signal(inter).*...
     exp(-2*pi*1i*(inter)'*(fFrequencyOffset+cFrequencyOffset)/mode);
 correctedSignal = correctedSignal((guard*mode+1):end);
 receivedSymbols = fft(correctedSignal);
+receivedSymbols = circshift(receivedSymbols, (numOut - 1) /2);
 Ttr=ifft(conj(pilotSymbols).*receivedSymbols);
 Ttr=Ttr.*[ones(20,1);zeros(length(Ttr)-40,1);ones(20,1)];
 [~,fTimeOffset] = max(abs(Ttr));
