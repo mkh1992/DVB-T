@@ -18,11 +18,9 @@ sampRate = 10e6;
 filename = '8K_1_8';
 fidr = fopen(filename);
 a = fread(fidr,4e6,'float'); % 2*sampRate*sec
-a = a(1:2:end)+1i*a(2:2:end);
-
+ofdm_samples = a(1:2:end)+1i*a(2:2:end);
 %% change sample time to "elemntary period" for 8MHz channels = 7/64 us
-ofdm_samples=[zeros(100,1);a];
-ofdm_samples = resample(ofdm_samples,64,70);
+%ofdm_samples = resample(ofdm_samples,64,70);
 clear a;
 %% Determine OFDM Mode (2k or 8k) and guard interval (1/4 1/8 1/16 1/32)
 fprintf('MODE Detection started\n')
@@ -98,7 +96,7 @@ end
 TPSdata = zeros(68,1);
 s = dir(filename);         
 filesize = s.bytes/(32*2)*8;
-fidw = fopen('test.ts','w');
+fidw = fopen('Output.ts','w');
 conutFirstPlace = 4e6;
 count = conutFirstPlace;
 GL = guardAssumed*ni;
