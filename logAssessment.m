@@ -14,13 +14,13 @@ addpath('constelation Demodulator')
 addpath('Channel Coding Layer')
 %% read Row data
 sec = 4; % amount of signal to be proccesed (in Sec)
-sampRate = 10e6;
+sampRate = 10e6; % presumed sample rate
 filename = '8K_1_8';
 fidr = fopen(filename);
 a = fread(fidr,4e6,'float'); % 2*sampRate*sec
 ofdm_samples = a(1:2:end)+1i*a(2:2:end);
 %% change sample time to "elemntary period" for 8MHz channels = 7/64 us
-%ofdm_samples = resample(ofdm_samples,64,70);
+ofdm_samples = resample(ofdm_samples,64,70);
 clear a;
 %% Determine OFDM Mode (2k or 8k) and guard interval (1/4 1/8 1/16 1/32)
 fprintf('MODE Detection started\n')
